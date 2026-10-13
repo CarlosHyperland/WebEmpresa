@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe técnico de seguridad web - OWASP ZAP</title>
+<style>
+:root{--ink:#202938;--muted:#596575;--line:#d7dee7;--soft:#f3f6fa;--blue:#173f6b;--green:#176b45;--amber:#8a5a00}
+*{box-sizing:border-box}
+body{margin:0;background:#edf1f5;color:var(--ink);font:15px/1.58 Arial,Helvetica,sans-serif}
+main{max-width:980px;margin:28px auto;padding:44px 54px;background:white;box-shadow:0 4px 24px #15253b18}
+header{border-bottom:3px solid var(--blue);padding-bottom:20px;margin-bottom:25px}
+.kicker{text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-size:.78rem;font-weight:bold}
+h1{color:var(--blue);font-size:2rem;line-height:1.2;margin:.45rem 0}
+h2{font-size:1.25rem;color:var(--blue);border-bottom:1px solid var(--line);padding-bottom:7px;margin-top:30px}
+h3{font-size:1.02rem;margin-bottom:7px}
+.meta{color:var(--muted)}
+table{border-collapse:collapse;width:100%;margin:12px 0 20px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.num{text-align:center;font-weight:bold}
+.status{padding:14px 17px;background:#edf7f1;border-left:5px solid var(--green);margin:20px 0}
+.status strong{color:var(--green)}
+.note{padding:12px 15px;background:#fff8e8;border-left:4px solid #c48a22;margin:16px 0}
+code{background:var(--soft);padding:2px 5px;border-radius:3px;overflow-wrap:anywhere}
+ul,ol{padding-left:24px}
+footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+@media print{body{background:white}main{max-width:none;margin:0;padding:12mm;box-shadow:none}h2{break-after:avoid}table,.status,.note{break-inside:avoid}}
+</style>
+</head>
+<body><main>
+<header>
+<div class="kicker">Informe técnico de seguridad web</div>
+<h1>Evaluación con OWASP ZAP</h1>
+<p><strong>Aplicación:</strong> WebEmpresa — módulo Cliente</p>
+<p class="meta"><strong>Herramienta:</strong> OWASP ZAP 2.17.0 · <strong>Fecha:</strong> 12 de octubre de 2026</p>
+<p class="meta"><strong>Informes fuente:</strong> <code>Informe_zap_antes.html</code> y <code>informe_zap_despues.html</code></p>
+</header>
+
+<div class="status"><strong>Validación final de cabeceras: CORRECTA.</strong> La comprobación HTTP realizada sobre un recurso estático de WebEmpresa respondió <code>200 OK</code> y mostró las cabeceras <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: SAMEORIGIN</code> y <code>Referrer-Policy: strict-origin-when-cross-origin</code>. Esta validación se refiere a esas cabeceras concretas; no significa que todas las alertas de ZAP estén resueltas.</div>
+
+<h2>1. Objetivo</h2>
+<p>Consolidar en un solo documento los resultados de los dos informes HTML generados por OWASP ZAP y documentar la comprobación final de las cabeceras de seguridad de WebEmpresa.</p>
+
+<h2>2. Alcance y archivos revisados</h2>
+<table>
+<tr><th>Informe</th><th>Alcance observado</th><th>Resumen de alertas por nivel</th></tr>
+<tr><td><code>Informe_zap_antes.html</code></td><td>Informe inicial con alcance más amplio y presencia de otros sitios además de la aplicación local.</td><td>0 altas · 4 medias · 3 bajas · 5 informativas (12 tipos de alerta).</td></tr>
+<tr><td><code>informe_zap_despues.html</code></td><td><code>http://localhost:5273</code>; incluye la página <code>/Cliente</code>. Generado el 12 de octubre de 2026 a las 22:11:50.</td><td>0 altas · 4 medias · 0 bajas · 4 informativas (8 tipos de alerta).</td></tr>
+</table>
+<div class="note"><strong>Nota sobre la comparación:</strong> los dos informes no tienen exactamente el mismo alcance. Por ello, la reducción en el número de tipos de alerta no debe interpretarse automáticamente como que todas las alertas de bajo riesgo fueron corregidas. El segundo informe también registra 9 advertencias de ZAP; conviene conservar el archivo original y revisar el registro <code>zap.log</code> si se necesita aclarar esas advertencias.</div>
+
+<h2>3. Comparación de resultados</h2>
+<table>
+<tr><th>Nivel</th><th class="num">Informe inicial</th><th class="num">Informe posterior</th><th>Observación</th></tr>
+<tr><td>Alto</td><td class="num">0</td><td class="num">0</td><td>No se registran tipos de alerta de riesgo alto en ninguno de los dos resúmenes.</td></tr>
+<tr><td>Medio</td><td class="num">4</td><td class="num">4</td><td>Las cuatro alertas relacionadas con CSP continúan presentes en el segundo informe.</td></tr>
+<tr><td>Bajo</td><td class="num">3</td><td class="num">0</td><td>El informe posterior no las muestra; dado que el alcance cambió, no se puede concluir solo con esto que estén corregidas.</td></tr>
+<tr><td>Informativo</td><td class="num">5</td><td class="num">4</td><td>Son observaciones informativas, no necesariamente vulnerabilidades explotables.</td></tr>
+<tr><th>Total de tipos de alerta</th><th class="num">12</th><th class="num">8</th><th>Los conteos representan tipos de alerta del resumen de cada archivo.</th></tr>
+</table>
+
+<h2>4. Hallazgos destacados del informe posterior</h2>
+<p>El archivo <code>informe_zap_despues.html</code> muestra cuatro tipos de alerta de riesgo medio, todos relacionados con la política Content Security Policy (CSP):</p>
+<ul>
+<li><strong>CSP: Failure to Define Directive with No Fallback.</strong> ZAP señala que falta la directiva <code>form-action</code>, que no hereda automáticamente de <code>default-src</code>.</li>
+<li><strong>CSP: Wildcard Directive.</strong> Revisar si la política usa comodines más amplios de lo necesario.</li>
+<li><strong>CSP: script-src unsafe-inline.</strong> La política permite scripts en línea; valorar nonces o hashes si la arquitectura lo permite.</li>
+<li><strong>CSP: style-src unsafe-inline.</strong> La política permite estilos en línea; valorar una configuración más restrictiva compatible con la aplicación.</li>
+</ul>
+<p>El informe posterior también incluye cuatro tipos de alerta informativa: <em>Information Disclosure - Suspicious Comments</em>, <em>Modern Web Application</em>, <em>Session Management Response Identified</em> y <em>User Agent Fuzzer</em>. Se recomienda revisar el detalle de cada alerta antes de clasificarla como un problema real o como información esperada.</p>
+
+<h2>5. Validación final de cabeceras</h2>
+<p>La respuesta de <code>http://localhost:5273/favicon.png</code> fue comprobada con una solicitud HTTP y devolvió <code>HTTP/1.1 200 OK</code>. Las cabeceras observadas fueron:</p>
+<table>
+<tr><th>Cabecera</th><th>Valor observado</th><th>Resultado de la comprobación</th></tr>
+<tr><td><code>X-Content-Type-Options</code></td><td><code>nosniff</code></td><td><strong>Correcto</strong></td></tr>
+<tr><td><code>X-Frame-Options</code></td><td><code>SAMEORIGIN</code></td><td><strong>Correcto</strong></td></tr>
+<tr><td><code>Referrer-Policy</code></td><td><code>strict-origin-when-cross-origin</code></td><td><strong>Correcto</strong></td></tr>
+</table>
+<p>Esta evidencia confirma la presencia de las tres cabeceras en la respuesta revisada. No demuestra por sí sola que estén presentes en todas las rutas, ni que se hayan solucionado las alertas CSP.</p>
+
+<h2>6. Conclusiones</h2>
+<ol>
+<li>Se documentaron los resultados de ambos archivos HTML de OWASP ZAP en un único informe.</li>
+<li>El primer informe registra 12 tipos de alerta y el segundo 8; como el alcance de los informes es diferente, la comparación debe interpretarse con cautela.</li>
+<li>En el informe posterior no aparecen alertas de riesgo alto ni bajo; se mantienen cuatro tipos de alerta de riesgo medio asociados a la política CSP y cuatro informativos.</li>
+<li>La validación final de las tres cabeceras de seguridad indicadas fue correcta para la respuesta HTTP comprobada.</li>
+<li>Los resultados presentados corresponden principalmente a WebEmpresa en <code>localhost:5273</code>. Estos dos informes no acreditan por sí solos una evaluación independiente de la API <code>ApiClientes</code>.</li>
+</ol>
+
+<h2>7. Recomendaciones</h2>
+<ul>
+<li>Revisar la política CSP, en especial <code>form-action</code>, el uso de comodines y las directivas <code>script-src</code> y <code>style-src</code>.</li>
+<li>Conservar ambos HTML originales como evidencia y anotar claramente qué alcance corresponde a cada uno.</li>
+<li>Si se vuelve a ejecutar un análisis activo, utilizar una copia de seguridad o una base de datos de prueba: un escaneo puede generar solicitudes que creen, modifiquen o eliminen registros.</li>
+<li>Si el trabajo requiere revisar también el backend, analizar la API <code>ApiClientes</code> por separado en un entorno controlado.</li>
+</ul>
+
+<footer><strong>Base documental:</strong> <code>Informe_zap_antes.html</code>, <code>informe_zap_despues.html</code> y la comprobación HTTP de cabeceras compartida durante la revisión. Este informe no incluye campos personales o datos del estudiante. La validación correcta se limita a las cabeceras verificadas y no constituye una certificación de ausencia total de vulnerabilidades.</footer>
+</main></body></html>

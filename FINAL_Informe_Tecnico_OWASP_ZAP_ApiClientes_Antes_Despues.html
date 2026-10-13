@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe técnico OWASP ZAP — API ApiClientes</title>
+<style>
+:root{--navy:#173b63;--blue:#245b8f;--ink:#243142;--muted:#5e6b7b;--line:#d9e1ea;--bg:#f2f5f9;--green:#176b45;--greenbg:#e8f6ee;--amber:#815b00;--amberbg:#fff5d9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+main{max-width:980px;margin:28px auto;padding:0 16px}.sheet{background:#fff;border:1px solid var(--line);border-radius:12px;padding:clamp(20px,4vw,44px);box-shadow:0 5px 22px #18334d0c}
+header{border-bottom:4px solid var(--navy);padding-bottom:18px}h1{color:var(--navy);font-size:clamp(27px,4vw,36px);line-height:1.2;margin:0 0 14px}h2{color:var(--navy);margin-top:32px;padding-bottom:7px;border-bottom:1px solid var(--line);font-size:22px}h3{margin-bottom:6px}.meta{color:var(--muted);font-size:14px;margin:4px 0}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.stat{border:1px solid var(--line);border-radius:8px;padding:14px}.stat strong{display:block;font-size:29px;color:var(--navy)}.stat span{font-size:13px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin:14px 0}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{background:#f1f5f9;color:#243c56}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4f8;border-radius:4px}code{padding:2px 4px;overflow-wrap:anywhere}pre{padding:14px;overflow-wrap:anywhere;white-space:pre-wrap}.status{display:inline-block;padding:3px 9px;border-radius:6px;font-size:13px;font-weight:650}.ok{background:var(--greenbg);color:var(--green)}.warn{background:var(--amberbg);color:var(--amber)}.note{border-left:4px solid var(--blue);background:#eef5fc;padding:12px 16px;margin:16px 0}.success{border-left:4px solid #26845b;background:var(--greenbg);padding:12px 16px;margin:16px 0}.footer{border-top:1px solid var(--line);margin-top:30px;padding-top:14px;color:var(--muted);font-size:13px}
+@media(max-width:620px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}table{font-size:14px}th,td{padding:7px}}
+@media print{body{background:#fff}.sheet{box-shadow:none;border:0;margin:0;padding:0}main{margin:0;max-width:none}.stat,table,pre{break-inside:avoid}}
+</style>
+</head>
+<body><main><article class="sheet">
+<header>
+<h1>Informe técnico de análisis de seguridad</h1>
+<p><strong>Aplicación evaluada:</strong> API ApiClientes</p>
+<p class="meta">Herramienta: OWASP ZAP 2.17.0</p>
+<p class="meta">Objetivo evaluado: <code>http://localhost:5081</code></p>
+<p class="meta">Comparación de reportes: antes (12 de octubre de 2026, 22:52:49) y después (12 de octubre de 2026, 23:01:14), según las fechas mostradas por ZAP.</p>
+</header>
+
+<h2>1. Resumen ejecutivo</h2>
+<p>Se realizó un escaneo de la API local <code>ApiClientes</code> con OWASP ZAP. En el informe inicial se identificó una alerta de riesgo bajo por la ausencia de la cabecera HTTP <code>X-Content-Type-Options</code>. Se modificó <code>Program.cs</code> para enviar la cabecera <code>X-Content-Type-Options: nosniff</code>.</p>
+<p>La verificación manual posterior con <code>curl</code> devolvió <code>HTTP/1.1 200 OK</code> y mostró la cabecera esperada. El informe posterior de ZAP declara: <strong>“No alerts were found within the report parameters.”</strong> Esto indica que el reporte posterior no contiene alertas dentro de los parámetros seleccionados.</p>
+<div class="summary">
+<div class="stat"><strong>1 → 0</strong><span>Alertas incluidas en los informes</span></div>
+<div class="stat"><strong>0</strong><span>Alertas altas en el informe inicial</span></div>
+<div class="stat"><strong>0</strong><span>Alertas medias en el informe inicial</span></div>
+<div class="stat"><strong>0</strong><span>Alertas en el informe posterior</span></div>
+</div>
+<div class="success"><strong>Resultado observado:</strong> la cabecera está presente en la respuesta de prueba y el informe posterior de ZAP no contiene alertas. El alcance de esta conclusión se limita al endpoint, sitio y pruebas realizados.</div>
+
+<h2>2. Alcance del análisis</h2>
+<table>
+<tr><th>Elemento</th><th>Detalle</th></tr>
+<tr><td>Aplicación</td><td>API ASP.NET Core ApiClientes</td></tr>
+<tr><td>Host y puerto</td><td><code>http://localhost:5081</code></td></tr>
+<tr><td>Endpoint verificado manualmente</td><td><code>GET /api/Clientes</code></td></tr>
+<tr><td>Herramienta</td><td>OWASP ZAP 2.17.0</td></tr>
+<tr><td>Respuesta manual posterior</td><td><code>HTTP/1.1 200 OK</code></td></tr>
+<tr><td>Tipo de contenido</td><td><code>application/json; charset=utf-8</code></td></tr>
+<tr><td>Cuerpo observado</td><td><code>[]</code>, arreglo JSON vacío</td></tr>
+</table>
+<p>El cuerpo vacío significa que el endpoint respondió con una colección sin elementos en esa prueba; no constituye por sí mismo un hallazgo de seguridad.</p>
+
+<h2>3. Comparación antes y después</h2>
+<table>
+<tr><th>Aspecto</th><th>Antes</th><th>Después</th></tr>
+<tr><td>Reporte de ZAP</td><td><code>Informe_ZAP_API_Antes.html</code>, 22:52:49</td><td><code>Informe_ZAP_API_Despues.html</code>, 23:01:14</td></tr>
+<tr><td>Alerta <code>X-Content-Type-Options Header Missing</code></td><td><span class="status warn">1 alerta de riesgo bajo</span></td><td><span class="status ok">No aparece en el reporte</span></td></tr>
+<tr><td>Alertas altas / medias</td><td>0 / 0</td><td>El reporte posterior declara que no encontró alertas dentro de sus parámetros</td></tr>
+<tr><td>Comprobación con curl</td><td>La cabecera estaba ausente en la evidencia inicial de ZAP</td><td>La respuesta incluye <code>X-Content-Type-Options: nosniff</code></td></tr>
+</table>
+
+<h2>4. Hallazgo inicial</h2>
+<h3>X-Content-Type-Options Header Missing <span class="status warn">Riesgo bajo</span></h3>
+<p>En el informe inicial, ZAP señaló que la respuesta a <code>GET http://localhost:5081/api/Clientes</code> no incluía la cabecera <code>X-Content-Type-Options</code>. La recomendación consiste en enviar el valor <code>nosniff</code>, que indica a los navegadores que no deben intentar adivinar o reinterpretar el tipo MIME de la respuesta.</p>
+<p>La alerta fue clasificada por ZAP con confianza media. Su presencia no significaba que se hubiera demostrado una explotación, sino que faltaba una medida de endurecimiento de la respuesta HTTP.</p>
+
+<h2>5. Corrección aplicada</h2>
+<p>Se añadió un middleware en <code>Program.cs</code>, después de construir la aplicación y antes de mapear los controladores:</p>
+<pre><code>app.Use(async (context, next) =&gt;
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    await next();
+});</code></pre>
+<p>Este middleware añade la cabecera a las respuestas que pasan por esa parte del pipeline. La ubicación concreta debe mantenerse antes de <code>app.MapControllers()</code>.</p>
+
+<h2>6. Evidencia de verificación posterior</h2>
+<p>La respuesta de terminal aportada tras el cambio fue:</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Server: Kestrel
+X-Content-Type-Options: nosniff
+
+[]</code></pre>
+<p>La evidencia confirma que, en esa solicitud, la API devolvió la cabecera requerida. El informe posterior de ZAP, generado el 12 de octubre de 2026 a las 23:01:14 según el archivo entregado, indica que no se encontraron alertas dentro de los parámetros del reporte.</p>
+
+<h2>7. Limitaciones</h2>
+<ul>
+<li>El reporte posterior no contiene alertas, pero eso no demuestra que la API esté libre de todas las vulnerabilidades.</li>
+<li>La prueba manual mostrada cubre el endpoint <code>GET /api/Clientes</code>; no demuestra el comportamiento de todas las rutas, métodos HTTP o respuestas de error.</li>
+<li>No se aportó evidencia de pruebas exhaustivas de autenticación, autorización, validación de entradas, control de acceso a clientes ni operaciones de creación, modificación y eliminación.</li>
+<li>El escaneo automatizado depende de las rutas que ZAP pudo descubrir y de los parámetros configurados.</li>
+<li>Las advertencias de paquetes NuGet y de redirección HTTPS observadas al ejecutar la API son asuntos separados de la alerta de cabecera y no quedan resueltos por este cambio.</li>
+</ul>
+
+<h2>8. Recomendaciones</h2>
+<ol>
+<li>Mantener la cabecera <code>X-Content-Type-Options: nosniff</code> y verificarla en las respuestas relevantes.</li>
+<li>Revisar por separado las advertencias de paquetes NuGet con vulnerabilidades conocidas y actualizar las dependencias a versiones compatibles y corregidas, después de comprobar compatibilidad.</li>
+<li>Configurar HTTPS correctamente para los entornos donde corresponda; la advertencia de que ASP.NET Core no pudo determinar el puerto HTTPS es independiente de esta cabecera.</li>
+<li>Probar de forma controlada las rutas y métodos autorizados, especialmente autenticación, autorización y operaciones que modifican datos. Usar una base de datos de pruebas o una copia de seguridad antes de realizar escaneos activos.</li>
+</ol>
+
+<h2>9. Conclusión</h2>
+<p>La comparación de los informes muestra que la alerta inicial de riesgo bajo por ausencia de <code>X-Content-Type-Options</code> ya no aparece en el reporte posterior. La comprobación con <code>curl</code> confirma que la API envía <code>X-Content-Type-Options: nosniff</code> en la respuesta de prueba. Por tanto, la corrección de esta cabecera queda verificada para esa solicitud. Se recomienda continuar con pruebas adicionales y revisar por separado las demás advertencias de configuración y dependencias.</p>
+
+<div class="footer">Informe elaborado a partir de los dos reportes HTML de OWASP ZAP proporcionados y de la salida de curl compartida en la conversación. Los resultados describen las pruebas observadas y no equivalen a una certificación de seguridad integral.</div>
+</article></main></body></html>
